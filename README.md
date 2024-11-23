@@ -62,13 +62,13 @@ I only take credit for the improvements and new features I developed (see below)
  * After using the script for a while, then toggling if off, mouse buttons stop working (mouse can still move). User can only click on the game window. Workaround: press **ctrl+alt+del** then **esc** to fix this state.
 
 # Setup Guide
-1. Download and extract the latest release of mouse2joystick_shadPS4
-2. Run mouse2joystick_shadPS4.exe as admin. You'll get a prompt to install ScpVBus (virtual XBox controller driver). Click yes, the driver will install and the script will reload.
+1. Download and extract the latest release of [mouse2joystick_shadPS4.zip](https://github.com/N3R4i/mouse2joystick_shadPS4/releases/tag/v1.0)
+2. Run **mouse2joystick_shadPS4.exe** as admin. You'll get a prompt to install ScpVBus (virtual XBox controller driver). Click **yes**, the driver will install and the script will reload.
 	* If the driver installation was succesfull, you'll hear the device connected sound and Scp Virtual Bus Driver and Xbox 360 Pheripherials will show up in your Decive Manager. If you have issues try running the Install.bat as admin in the ScpVBus folder.
-3. Double click on the mouse2joystick tray icon
-	* General-Hotkeys to set a toggle key for mouse2joystick (default is F1)
-	* General-Setup if you want to tweak your mouse
-	* Mouse2Joystick-Keys to set up your main keybinds (several profiles can be saved with the KeyList Manager)
-	* Keyboard Movement-Keys to set up your movement keys and walk toggle key
-	* BloodBorne Bonus Buttons [B<sup>4</sup>] to set up special keybinds for Bloodborne
-4. Run the game and press your toggle key (default is F1)
+3. Double click on the **mouse2joystick tray icon**
+	* **General-Hotkeys** to set a toggle key for mouse2joystick (default is **F1**)
+	* **General-Setup** if you want to tweak your mouse
+	* **Mouse2Joystick-Keys** to set up your main keybinds (several profiles can be saved with the KeyList Manager)
+	* **Keyboard Movement-Keys** to set up your movement keys and walk toggle key
+	* **BloodBorne Bonus Buttons [B<sup>4</sup>]** to set up special keybinds for Bloodborne
+4. Run the game and press your toggle key (default is **F1**)
