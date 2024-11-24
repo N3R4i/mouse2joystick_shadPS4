@@ -1,6 +1,6 @@
-﻿;	;	;	;	;	;	;	;	;	;	;	;	;	;	;	;
+;	;	;	;	;	;	;	;	;	;	;	;	;	;	;	;
 ;	Modified for shadPS4 by: N3R4i (https://github.com/N3R4i/)
-;	Last Modified Date: 2024-11-23
+;	Last Modified Date: 2024-11-24
 ; 
 ;	Original Author: Helgef
 ;	Date: 2016-08-17
@@ -28,7 +28,7 @@
 ;			evilC - CvJoyInterface.ahk
 ;			CemuUser8 - CvGenInterface.ahk (modified version of CvJoyInterface.ahk with vXBox device support)
 ;
-version := "v1.0"
+version := "v1.01"
 #NoEnv  																; Recommended for performance and compatibility with future AutoHotkey releases.
 SendMode Input															; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  											; Ensures a consistent starting directory.
@@ -396,7 +396,7 @@ mouse2joystickHotkeys:
 		Hotkey,%rightKey%, overwriteRight, on 
 		Hotkey,%rightKey% Up, overwriteRightup, on
 
-	KeyListByNumBB := []	;joystickButtonKeyListBB keys has to be feed into KeyListByNumBB[#] here
+	KeyListByNumBB := []	;joystickButtonKeyListBB keys have to be fed into KeyListByNumBB[#] here
 	Loop, Parse, joystickButtonKeyListBB, `,
 	{
 	keyName := A_LoopField
@@ -405,7 +405,7 @@ mouse2joystickHotkeys:
 	KeyListByNumBB[A_Index] := keyName
 	}
 	
-	KeyListByNum := []	;joystickButtonKeyList keys has to be feed into KeyListByNum[#] here
+	KeyListByNum := []	;joystickButtonKeyList keys have to be fed into KeyListByNum[#] here
 	Loop, Parse, joystickButtonKeyList, `,
 	{
 	keyName := A_LoopField
@@ -579,6 +579,7 @@ sprint:	;#6 Sprint
 			SetTimer, WasSprinting, 25	;timer since sprinting stopped
 			Return
 		}
+		sleep 100	;prevents hotkey spam
 	}
 return
 
@@ -670,6 +671,7 @@ vsprintTimerMax=900	;max time to wait with jumping after sprinting started
 		}
 		Else {	;cap out at vsprintTimerMax
 			vsprintTimer:=vsprintTimerMax
+			sleep 250	;this fixes the camera stuttering while sprinting
 		}
 	}
 	vsprintTimer=0
@@ -712,7 +714,6 @@ pressJoyButton:
 		{
 		Case 2:
 			vstick.SetBtn(1,joyButtonNumber)
-			vsprintTimer=0
 			SetTimer, IsSprinting, On	;Sprint timer
 			SetTimer, WasSprinting, Off	;Post-sprint timer
 		Case 7:
@@ -1066,8 +1067,8 @@ mouse2joystick(r,dr,OX,OY) {
 	}
 	
 	; Calculate angle
-	phi:=getAngle(X,Y)							
-	
+	phi:=getAngle(X,Y)
+	MouseMove,OX,OY	;adding one more MouseMove here makes the cursor jump back to the center more consistently, which reduces the occasional camera stutter
 	
 	IF (RR>k*r AND !AlreadyDown) 								; Check If outside inner circle/deadzone.
 		action(phi,((RR-k*r)/(r-k*r))**nnp)		; nnp is a non-linearity parameter.	
