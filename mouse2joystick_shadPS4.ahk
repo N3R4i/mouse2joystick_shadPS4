@@ -73,7 +73,7 @@ autoActivateGame=1
 r=80
 nnp=1
 k=0
-freq=15
+freq=1
 minmove=0.37
 acceleration=0
 [General>Hotkeys]
@@ -1378,7 +1378,7 @@ GUI, Tab, General>Setup
 	
 	GUI, Add, GroupBox, xs yp+30 w320 h50, Mouse Check Frequency
 	GUI, Add, Edit, xs+10 yp+20 w50 vopfreq Number, %freq%
-	GUI, Add, Text, x+4 yp+3, Recommended: 1-50
+	GUI, Add, Text, x+4 yp+3, Recommended: 1
 	
 	GUI, Add, GroupBox, xs yp+30 w320 h50, Deadzone Compensation (stick offset)
 	GUI, Add, Edit, xs+10 yp+20 w50 vopminmove gNumberCheck, %minmove%
@@ -1798,7 +1798,7 @@ autoActivateGame=1
 r=80
 nnp=1
 k=0
-freq=15
+freq=1
 minmove=0.37
 acceleration=1
 controllerSwitchKey=F1
