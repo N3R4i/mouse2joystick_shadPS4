@@ -1,4 +1,4 @@
-Version 1.0
+Version 1.01
 
 **SETUP GUIDE AT THE BOTTOM**
 
@@ -48,20 +48,21 @@ I only take credit for the improvements and new features I developed (see below)
 	* Walking - set up a key to toggle walking and increase/decrease walking speed
  * **BloodBorne Bonus Buttons [B<sup>4</sup>]**
 	* Bonus Buttons - I used the same interface as the KeyList Helper. Each key does specifically what it says. All dodge and backstep binds are executed on key press, rather than on release.
-		* **Dodge/Backstep (no jump)** - Dedicated dodge/backstep key. If used while stationary it causes a backstep. If used while moving it causes a dodge. If used while sprinting, it cause you to momentarily stop and roll.
-		* **Dodge (no jump)** - Dedicated dodge key. If used while stationary it causes you to dodge forward. If used while moving it causes a dodge. If used while sprinting, it cause you to momentarily stop and roll.
+		* **Dodge/Backstep (no jump)** - Dedicated dodge/backstep key | While standin still -> backstep | While running -> dodge | While sprinting -> momentarily stop and roll
+		* **Dodge (no jump)** - Dedicated dodge key | While standin still -> dodge forward | While running -> dodge | While sprinting -> momentarily stop and roll
 		* **Dodge/Backstep (with jump)** - Same as above, but can be used for jumping
 		* **Dodge (with jump)** - Same as above, but can be used for jumping
-		* **Backstep** - Dedicated backstep key. If used while stationary it causes a backstep. If used while running/sprinting, it cause you to momentarily stop and backstep.
-		* **Sprint** - Dedicated sprint key. If used while moving, it makes you sprint. Otherwise, it does nothing.
-		* **Jump** - Dedicated jump key. If used while sprinting if initiates a jump (after the minimum time needed to reach jumping speed). Otherwise, it does nothing.
-		* **Jump Attack** - Dedicated jump attack key. Does a jump attack. Can be used while stationary/running/sprinting.
+		* **Backstep** - Dedicated backstep key | While standin still -> backstep | While running/sprinting -> momentarily stop and backstep
+		* **Sprint** - Dedicated sprint key | While running -> it makes you sprint. Otherwise, it does nothing.
+		* **Jump** - Dedicated jump key | While sprinting it initiates a jump (after the minimum time needed to reach jumping speed). Otherwise, it does nothing.
+		* **Jump Attack** - Dedicated jump attack key | Does a jump attack. Can be used while standing still/running/sprinting.
  * **Extra Settings** - apart from the self explanatory hide cursor option, these are not tested with shadPS4 and probably won't work.
 
 ## Known issues
  * After using the script for a while, then toggling if off, mouse buttons stop working (mouse can still move). User can only click on the game window. Workaround: press **ctrl+alt+del** then **esc** to fix this state.
 
 # Setup Guide
+0. For OS prior to Windows 10 you'll also need the [Xbox 360 Controller for Windows driver](https://web.archive.org/web/20160425082525/https://www.microsoft.com/hardware/en-us/d/xbox-360-controller-for-windows)
 1. Download and extract the latest release of [mouse2joystick_shadPS4.zip](https://github.com/N3R4i/mouse2joystick_shadPS4/releases/tag/v1.0)
 2. Run **mouse2joystick_shadPS4.exe** as admin. You'll get a prompt to install ScpVBus (virtual XBox controller driver). Click **yes**, the driver will install and the script will reload.
 	* If the driver installation was succesfull, you'll hear the device connected sound and Scp Virtual Bus Driver and Xbox 360 Pheripherials will show up in your Decive Manager. If you have issues try running the Install.bat as admin in the ScpVBus folder.
