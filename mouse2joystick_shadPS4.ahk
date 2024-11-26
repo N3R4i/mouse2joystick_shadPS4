@@ -1,6 +1,6 @@
 ;	;	;	;	;	;	;	;	;	;	;	;	;	;	;	;
 ;	Modified for shadPS4 by: N3R4i (https://github.com/N3R4i/)
-;	Last Modified Date: 2024-11-24
+;	Last Modified Date: 2024-11-26
 ; 
 ;	Original Author: Helgef
 ;	Date: 2016-08-17
@@ -28,7 +28,7 @@
 ;			evilC - CvJoyInterface.ahk
 ;			CemuUser8 - CvGenInterface.ahk (modified version of CvJoyInterface.ahk with vXBox device support)
 ;
-version := "v1.01"
+version := "v1.02"
 #NoEnv  																; Recommended for performance and compatibility with future AutoHotkey releases.
 SendMode Input															; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  											; Ensures a consistent starting directory.
@@ -396,13 +396,13 @@ mouse2joystickHotkeys:
 		Hotkey,%rightKey%, overwriteRight, on 
 		Hotkey,%rightKey% Up, overwriteRightup, on
 
-	KeyListByNumBB := []	;joystickButtonKeyListBB keys have to be fed into KeyListByNumBB[#] here
+	KeyListByNumBB := []	;Feed joystickButtonKeyListBB keys into KeyListByNumBB[#] and turn on  hotkeys
 	Loop, Parse, joystickButtonKeyListBB, `,
 	{
-	keyName := A_LoopField
-	If !keyName
-		continue
-	KeyListByNumBB[A_Index] := keyName
+		If !A_LoopField
+			continue
+		KeyListByNumBB[A_Index] := A_LoopField
+		Hotkey, % (KeyListByNumBB[A_Index]), actionBB%A_Index%, on
 	}
 	
 	KeyListByNum := []	;joystickButtonKeyList keys have to be fed into KeyListByNum[#] here
@@ -413,51 +413,44 @@ mouse2joystickHotkeys:
 		continue
 	KeyListByNum[A_Index] := keyName
 	}
-	
-	IF (KeyListByNumBB[1]!="") {	;prevents error when var is empty
-		Hotkey, % (KeyListByNumBB[1]), dodgeStep, on
-	}
-	IF (KeyListByNumBB[2]!="") {	;prevents error when var is empty
-		Hotkey, % (KeyListByNumBB[2]), dodge, on
-	}
-	IF (KeyListByNumBB[3]!="") {	;prevents error when var is empty
-		Hotkey, % (KeyListByNumBB[3]), dodgeStepJump, on
-	}
-	IF (KeyListByNumBB[4]!="") {	;prevents error when var is empty
-		Hotkey, % (KeyListByNumBB[4]), dodgeJump, on
-	}
-	IF (KeyListByNumBB[5]!="") {	;prevents error when var is empty
-		Hotkey, % (KeyListByNumBB[5]), backstep, on
-	}
-	IF (KeyListByNumBB[6]!="") {	;prevents error when var is empty
-		Hotkey, % (KeyListByNumBB[6]), sprint, on
-	}
-	IF (KeyListByNumBB[7]!="") {	;prevents error when var is empty
-		Hotkey, % (KeyListByNumBB[7]), jump, on
-	}
-	IF (KeyListByNumBB[8]!="") {	;prevents error when var is empty
-		Hotkey, % (KeyListByNumBB[8]), jumpAttack, on
-	}
-	
+
 	KeyList := []
 	Loop, Parse, joystickButtonKeyList, `,
 	{
 		useButton := A_Index
 		Loop, Parse, A_LoopField, |
-		{		
+		{	
 			keyName=*%A_LoopField%	;added * so hotkeys work even when modifiers are held
 			IF (!keyName)
 				Continue
 			KeyList[keyName] := useButton
-			Hotkey,%keyName%, pressJoyButton, on 
+			Hotkey,%keyName%, pressJoyButton, on
 			Hotkey,%keyName% Up, releaseJoyButton, on
 		}
 	}
 	Hotkey, IF
 Return
 
-dodgeStep:	;#1 Dodge+Backstep+Prevent jump
-	If GetKeyState(KeyListByNum[2], "P") OR GetKeyState(KeyListByNumBB[6], "P")  {	;prevents jumping if dodge is used during sprinting
+Moving() {	;check movement key state
+	Global
+	If GetKeyState(upKey, "P") OR GetKeyState(downKey, "P") OR GetKeyState(leftKey, "P") OR GetKeyState(rightKey, "P")	{
+		return 1
+	} Else {
+		return 0
+	}
+}
+
+Sprinting() {	;check sprinting key state
+	Global
+	If GetKeyState(KeyListByNum[2], "P") OR GetKeyState(KeyListByNumBB[6], "P")	{
+		return 1
+	} Else {
+		return 0
+	}
+}
+
+actionBB1:	;#1 Dodge+Backstep+Prevent jump
+	If Moving() AND Sprinting()  {	;prevents jumping if dodge is used during sprinting
 		vstick.SetBtn(0,2)
 		sleep 300
 	}
@@ -468,15 +461,15 @@ dodgeStep:	;#1 Dodge+Backstep+Prevent jump
 	sleep 30
 	vstick.SetBtn(0,2)	;causes dodge on key press, rather than on key release
 	sleep 30
-	If GetKeyState(KeyListByNum[2], "P") OR GetKeyState(KeyListByNumBB[6], "P") {	;keep sprinting
+	If Moving() AND Sprinting() {	;keep sprinting
 		vstick.SetBtn(1,2)
 	}
-Keywait, % (KeyListByNumBB[1])
+	;Keywait % (KeyListByNumBB[1])
 return
 
-dodge:	;#2 Dodge+Prevent jump
-	IF GetKeyState(upKey, "P") or GetKeyState(downKey, "P") or GetKeyState(leftKey, "P") or GetKeyState(rightKey, "P") {	;check if moving
-		If GetKeyState(KeyListByNum[2], "P") OR GetKeyState(KeyListByNumBB[6], "P") {	;prevents jumping if dodge is used during sprinting
+actionBB2:	;#2 Dodge+Prevent jump
+	IF Moving() {
+		If Sprinting() {	;prevents jumping if dodge is used during sprinting
 			vstick.SetBtn(0,2)
 			sleep 300
 		}
@@ -487,11 +480,11 @@ dodge:	;#2 Dodge+Prevent jump
 		sleep 30
 		vstick.SetBtn(0,2)	;causes dodge on key press, rather than on key release
 		sleep 30
-		If GetKeyState(KeyListByNum[2], "P") OR GetKeyState(KeyListByNumBB[6], "P") {	;keep sprinting
+		If Sprinting() {	;keep sprinting
 			vstick.SetBtn(1,2)
 		}
-	Keywait, % (KeyListByNumBB[2])
-	Return
+		;Keywait, % (KeyListByNumBB[2])
+		Return
 	}
 	setStickLeft("N/A",1, True)
 	sleep 30
@@ -500,11 +493,11 @@ dodge:	;#2 Dodge+Prevent jump
 	vstick.SetBtn(0,2)
 	sleep 30
 	setStickLeft("N/A",0, True)
-	Keywait, % (KeyListByNumBB[2])
+	;Keywait % (KeyListByNumBB[2])
 return
 
-dodgeStepJump:	;#3 Dodge+Backstep+Allow Jump
-	If GetKeyState(KeyListByNum[2], "P") OR GetKeyState(KeyListByNumBB[6], "P") {	;Allow jump
+actionBB3:	;#3 Dodge+Backstep+Allow Jump
+	If Sprinting() {	;Allow jump
 		vstick.SetBtn(0,2)
 		sleep 30
 	}
@@ -512,15 +505,15 @@ dodgeStepJump:	;#3 Dodge+Backstep+Allow Jump
 	sleep 30
 	vstick.SetBtn(0,2)	;causes dodge on key press, rather than on key release
 	sleep 30
-	If GetKeyState(KeyListByNum[2], "P") OR GetKeyState(KeyListByNumBB[6], "P") {	;keep sprinting
+	If Moving() AND Sprinting() {	;keep sprinting
 		vstick.SetBtn(1,2)
 	}
-Keywait, % (KeyListByNumBB[3])
+	;Keywait % (KeyListByNumBB[3])
 return
 
-dodgeJump:	;#4 Dodge+Allow jump
-	IF GetKeyState(upKey, "P") or GetKeyState(downKey, "P") or GetKeyState(leftKey, "P") or GetKeyState(rightKey, "P") {	;check if moving
-		If GetKeyState(KeyListByNum[2], "P") OR GetKeyState(KeyListByNumBB[6], "P") {	;Allow jump
+actionBB4:	;#4 Dodge+Allow jump
+	IF Moving() {
+		If Sprinting() {	;Allow jump
 			vstick.SetBtn(0,2)
 			sleep 30
 		}
@@ -528,11 +521,11 @@ dodgeJump:	;#4 Dodge+Allow jump
 		sleep 30
 		vstick.SetBtn(0,2)	;causes dodge on key press, rather than on key release
 		sleep 30
-		If GetKeyState(KeyListByNum[2], "P") OR GetKeyState(KeyListByNumBB[6], "P") {	;keep sprinting
+		If Sprinting() {	;keep sprinting
 			vstick.SetBtn(1,2)
 		}
-	Keywait, % (KeyListByNumBB[4])
-	Return
+		;Keywait % (KeyListByNumBB[4])
+		Return
 	}
 	setStickLeft("N/A",1, True)
 	sleep 30
@@ -541,11 +534,11 @@ dodgeJump:	;#4 Dodge+Allow jump
 	vstick.SetBtn(0,2)
 	sleep 30
 	setStickLeft("N/A",0, True)
-	Keywait, % (KeyListByNumBB[4])
+	;Keywait % (KeyListByNumBB[4])
 return
 
-backstep:	;#5 Backstep
-	IF GetKeyState(upKey, "P") or GetKeyState(downKey, "P") or GetKeyState(leftKey, "P") or GetKeyState(rightKey, "P") {	;check if moving
+actionBB5:	;#5 Backstep
+	IF Moving() {
 		setStickLeft(0,0, True)	;stop moving
 		vstick.SetBtn(0,2)	;release X buttong in case it was held
 			sleep 30
@@ -554,25 +547,25 @@ backstep:	;#5 Backstep
 		vstick.SetBtn(0,2)	;causes backstep on key press, rather than on key release
 			sleep 30
 		KeepStickHowItWas()	;keep moving after backstep
-		If GetKeyState(KeyListByNum[2], "P") OR GetKeyState(KeyListByNumBB[6], "P") {	;keep sprinting
+		If Sprinting() {	;keep sprinting
 			vstick.SetBtn(1,2)
 		}
-	Keywait, % (KeyListByNumBB[5])
-	Return
+		;Keywait % (KeyListByNumBB[5])
+		Return
 	}
-vstick.SetBtn(1,2)
-sleep 30
-vstick.SetBtn(0,2)	;causes backstep on key press, rather than on key release
-Keywait, % (KeyListByNumBB[5])
+	vstick.SetBtn(1,2)
+	sleep 30
+	vstick.SetBtn(0,2)	;causes backstep on key press, rather than on key release
+	;Keywait % (KeyListByNumBB[5])
 return
 
-sprint:	;#6 Sprint
+actionBB6:	;#6 Sprint
 	While GetKeyState(KeyListByNumBB[6], "P") {
-		IF GetKeyState(upKey, "P") or GetKeyState(downKey, "P") or GetKeyState(leftKey, "P") or GetKeyState(rightKey, "P") {	;check if moving
+		IF Moving() {
 			vstick.SetBtn(1,2)	;start sprinting
 			SetTimer, IsSprinting, On	;start sprint timer
 			sleep 500	;don't release it too early to prevent rolling
-			Keywait, % (KeyListByNumBB[6])
+			Keywait % (KeyListByNumBB[6])
 			vstick.SetBtn(0,2)
 			vsprintTimer=0
 			vsprintTimerPost=0
@@ -583,10 +576,10 @@ sprint:	;#6 Sprint
 	}
 return
 
-jump:	;#7 Jump (causes dodge if used too early, which is difficult to fix)
+actionBB7:	;#7 Jump (causes dodge if used too early, which is difficult to fix)
 	SetTimer, IsSprinting, Off
-	IF GetKeyState(upKey, "P") or GetKeyState(downKey, "P") or GetKeyState(leftKey, "P") or GetKeyState(rightKey, "P") {	;check if moving
-		If GetKeyState(KeyListByNum[2], "P") OR GetKeyState(KeyListByNumBB[6], "P") {	;check if sprinting
+	IF Moving() {
+		If Sprinting() {
 			sleep vsprintTimerMax-vsprintTimer
 			vstick.SetBtn(0,2)
 			sleep 30
@@ -594,12 +587,12 @@ jump:	;#7 Jump (causes dodge if used too early, which is difficult to fix)
 			sleep 30
 			vstick.SetBtn(0,2)
 			sleep 30
-			If GetKeyState(KeyListByNum[2], "P") OR GetKeyState(KeyListByNumBB[6], "P") {	;keep sprinting
+			If Sprinting() {	;keep sprinting
 				vstick.SetBtn(1,2)
 			}
 			vsprintTimer=0
 			SetTimer, IsSprinting, On
-			Keywait, % (KeyListByNumBB[7])
+			;Keywait % (KeyListByNumBB[7])
 			return
 		}
 		;If (vWasSprinting=0) {	;if not sprinting yet, then you will! This is way too inconsistent :-( may work with a better timer
@@ -618,12 +611,12 @@ jump:	;#7 Jump (causes dodge if used too early, which is difficult to fix)
 			sleep 30
 			vstick.SetBtn(0,2)
 		}
-		Keywait, % (KeyListByNumBB[7])
+		;Keywait % (KeyListByNumBB[7])
 	}	
 return
 
-jumpAttack:	;#8 Jump attack
-	IF GetKeyState(upKey, "P") or GetKeyState(downKey, "P") or GetKeyState(leftKey, "P") or GetKeyState(rightKey, "P") {	;check if moving
+actionBB8:	;#8 Jump attack
+	IF Moving() {
 		setStickLeft(0,0, True)	;stop moving
 		sleep 30
 		Halted=1	
@@ -639,7 +632,39 @@ jumpAttack:	;#8 Jump attack
 		KeepStickHowItWas()
 	}
 	Halted=0
-	Keywait, % (KeyListByNumBB[8])
+	;Keywait % (KeyListByNumBB[8])
+return
+
+actionBB9:
+short:=30
+long:=100
+	vstick.SetBtn(1,8)	;start
+	sleep %short%
+	vstick.SetBtn(0,8)
+	sleep %long%
+	vstick.SetPOV(270)	;D-Left
+	sleep %short%
+	vstick.SetPOV(-1)
+	sleep %long%
+	vstick.SetBtn(1,1)	;X
+	sleep %short%
+	vstick.SetBtn(0,1)
+	sleep %long%
+	vstick.SetPOV(0)	;D-Up
+	sleep %short%
+	vstick.SetPOV(-1)
+	sleep %long%
+	vstick.SetBtn(1,1)	;X
+	sleep %short%
+	vstick.SetBtn(0,1)
+	sleep %long%
+	vstick.SetPOV(270)	;D-Left
+	sleep %short%
+	vstick.SetPOV(-1)
+	sleep 400
+	vstick.SetBtn(1,1)	;X
+	sleep %short%
+	vstick.SetBtn(0,1)
 return
 
 kickAttack:	;cut content, could be usefull if a modder restores it
@@ -1072,8 +1097,8 @@ mouse2joystick(r,dr,OX,OY) {
 	
 	IF (RR>k*r AND !AlreadyDown) 								; Check If outside inner circle/deadzone.
 		action(phi,((RR-k*r)/(r-k*r))**nnp)		; nnp is a non-linearity parameter.	
-	 Else
-		 setStick(0,0)							; Stick in equllibrium.
+	Else
+		setStick(0,0)							; Stick in equllibrium.
 
 	MouseMove,OX,OY
 }
@@ -1220,7 +1245,11 @@ setStick(x,y, a := False) {
 	multx:=(Abs(x)+1)**acceleration	;mouse acceleration
 	multy:=(Abs(y)+1)**acceleration
 	x:=(sign(x)*minmove)+x*multx	;apply deadzone compensation with linear offset and mouse acceleration
-	y:=(sign(y)*minmove)+y*multy	
+	y:=(sign(y)*minmove)+y*multy
+	
+	x:=x+0.004	;for some reason in Bloodborne there's more deadzone to the left/up
+	y:=y-0.004	
+		
 	IF Abs(x)>1 {	;cap x between -1,1
 		x:=sign(x)
 	}
@@ -1551,29 +1580,11 @@ mainSave:
 	Hotkey,%rightKey%, overwriteRight, off
 	Hotkey,%rightKey% Up, overwriteRightup, off
 
-	IF (KeyListByNumBB[1]!="") {	;prevents error when var is empty
-		Hotkey, % (KeyListByNumBB[1]), dodgeStep, off
-	}
-	IF (KeyListByNumBB[2]!="") {	;prevents error when var is empty
-		Hotkey, % (KeyListByNumBB[2]), dodge, off
-	}
-	IF (KeyListByNumBB[3]!="") {	;prevents error when var is empty
-		Hotkey, % (KeyListByNumBB[3]), dodgeStepJump, off
-	}
-	IF (KeyListByNumBB[4]!="") {	;prevents error when var is empty
-		Hotkey, % (KeyListByNumBB[4]), dodgeJump, off
-	}
-	IF (KeyListByNumBB[5]!="") {	;prevents error when var is empty
-		Hotkey, % (KeyListByNumBB[5]), backstep, off
-	}
-	IF (KeyListByNumBB[6]!="") {	;prevents error when var is empty
-		Hotkey, % (KeyListByNumBB[6]), sprint, off
-	}
-	IF (KeyListByNumBB[7]!="") {	;prevents error when var is empty
-		Hotkey, % (KeyListByNumBB[7]), jump, off
-	}
-	IF (KeyListByNumBB[8]!="") {	;prevents error when var is empty
-		Hotkey, % (KeyListByNumBB[8]), jumpAttack, off
+	Loop, Parse, joystickButtonKeyListBB, `,
+	{
+		If !A_LoopField
+			continue
+		Hotkey, % (KeyListByNumBB[A_Index]), actionBB%A_Index%, off
 	}
 
 	Loop, Parse, joystickButtonKeyList, `,
@@ -1850,7 +1861,7 @@ Loop, Parse, getKeyList, `,
 }
 IF (vXBox) {
 	textWidth := 140
-	numEdits := 8
+	numEdits := 9
 }
 Else {
 	textWidth := 50
@@ -1864,33 +1875,36 @@ GUI, Font,, Lucida Sans Typewriter ; Courier New
 GUI, Add, Text, W0 H0 vLoseFocus, Hidden
 GUI, Add, Text, W%textWidth% R1 Right Section, Dodge/Backstep (no jump)
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[1]
-GUI, Add, Button, xp+85 yp-1 w19 gClear1, X
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v1, X
 GUI, Add, Text, W%textWidth% xs R1 Right, Dodge (no jump)
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[2]
-GUI, Add, Button, xp+85 yp-1 w19 gClear2, X
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v2, X
 GUI, Add, Text, W%textWidth% xs R1 Right, Dodge/Backstep (with jump)
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[3]
-GUI, Add, Button, xp+85 yp-1 w19 gClear3, X
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v3, X
 GUI, Add, Text, W%textWidth% xs R1 Right, Dodge (with jump)
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[4]
-GUI, Add, Button, xp+85 yp-1 w19 gClear4, X
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v4, X
 GUI, Add, Text, W%textWidth% ys R1 Right Section, Backstep
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[5]
-GUI, Add, Button, xp+85 yp-1 w19 gClear5, X
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v5, X
 GUI, Add, Text, W%textWidth% xs R1 Right, Sprint
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[6]
-GUI, Add, Button, xp+85 yp-1 w19 gClear6, X
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v6, X
 GUI, Add, Text, W%textWidth% xs R1 Right, Jump
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[7]
-GUI, Add, Button, xp+85 yp-1 w19 gClear7, X
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v7, X
 GUI, Add, Text, W%textWidth% xs R1 Right, Jump Attack
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[8]
-GUI, Add, Button, xp+85 yp-1 w19 gClear8, X
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v8, X
+GUI, Add, Text, W%textWidth% xs R1 Right, Save&&Quit
+GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[9]
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v9, X
 GUI, Add, Text, w0 xs R1 Right, Dummy
 
-GUI, Add, Button, xp-80 yp+10 w80 gSaveButtonBB Section, Save
+GUI, Add, Button, xp-100 yp-20 w80 gSaveButtonBB Section, Save
 GUI, Add, Button, x+m w80 gCancelButton, Cancel
-GUI, Add, Button, xs w170 gClearButton, Clear
+GUI, Add, Button, xs w170 gClearButton, Clear All
 GUI, Add, Text, w0 yp+15 R1 Right, Dummy
 
 GUI, Show,, KeyList Helper
@@ -1929,37 +1943,53 @@ GUI, Font,, Lucida Sans Typewriter ; Courier New
 GUI, Add, Text, W0 H0 vLoseFocus, Hidden
 GUI, Add, Text, W%textWidth% R1 Right Section, % vXBox ? Format("{1:-9.9s}{2:4.4s}","( A - ✕ )","A") : "A"
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNum[1]
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v1, X
 GUI, Add, Text, W%textWidth% xs R1 Right, % vXBox ? Format("{1:-9.9s}{2:4.4s}","( B - ○ )","B") : "B"
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNum[2]
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v2, X
 GUI, Add, Text, W%textWidth% xs R1 Right, % vXBox ? Format("{1:-9.9s}{2:4.4s}","( X - □ )","X") : "X"
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNum[3]
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v3, X
 GUI, Add, Text, W%textWidth% xs R1 Right, % vXBox ? Format("{1:-9.9s}{2:4.4s}","( Y - △ )","Y") : "Y"
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNum[4]
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v4, X
 GUI, Add, Text, W%textWidth% xs R1 Right, % vXBox ? Format("{1:-9.9s}{2:4.4s}","(LB - L1)","L") : "L"
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNum[5]
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v5, X
 GUI, Add, Text, W%textWidth% xs R1 Right, % vXBox ? Format("{1:-9.9s}{2:4.4s}","(RB - R1)","R") : "R"
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNum[6]
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v6, X
 GUI, Add, Text, W%textWidth% xs R1 Right, % vXBox ? Format("{1:-9.9s}{2:4.4s}","(LT - L2)","ZL") : "ZL"
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNum[7]
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v7, X
 GUI, Add, Text, W%textWidth% xs R1 Right, % vXBox ? Format("{1:-9.9s}{2:4.4s}","(RT - R2)","ZR") : "ZR"
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNum[8]
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v8, X
 GUI, Add, Text, W%textWidth% xs R1 Right, % vXBox ? Format("{1:-9.9s}{2:4.4s}","( Start )","+") : "+"
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNum[9]
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v9, X
 GUI, Add, Text, W%textWidth% xs R1 Right, % vXBox ? Format("{1:-9.9s}{2:4.4s}","( Back  )","-") : "-"
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNum[10]
-GUI, Add, Text, w65 ys R1 Right Section, L-Click
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v10, X
+GUI, Add, Text, w45 xp+20 ys R1 Right Section, L-Click
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNum[11]
-GUI, Add, Text, w65 ys R1 Right Section, R-Click
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v11, X
+GUI, Add, Text, w45 xp+20 ys R1 Right Section, R-Click
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNum[12]
-GUI, Add, Text, w80 ys R1 Right Section, D-Up
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v12, X
+GUI, Add, Text, w45 xp+20 ys R1 Right Section, D-Up
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNum[13]
-GUI, Add, Text, w80 xs R1 Right, D-Down
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v13, X
+GUI, Add, Text, w80 xs-35 R1 Right, D-Down
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNum[14]
-GUI, Add, Text, w80 xs R1 Right, D-Left
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v14, X
+GUI, Add, Text, w80 xs-35 R1 Right, D-Left
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNum[15]
-GUI, Add, Text, w80 xs R1 Right, D-Right
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v15, X
+GUI, Add, Text, w80 xs-35 R1 Right, D-Right
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNum[16]
-GUI, Add, Text, w0 xs R1 Right, Dummy
+GUI, Add, Button, xp+85 yp-1 w19 gClearOne v16, X
+GUI, Add, Text, w0 xs-35 R1 Right, Dummy
 IF(!vXBox) {
 	GUI, Add, Text, w80 xs R1 Right, Blow-Mic
 	GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNum[17]
@@ -1970,7 +2000,7 @@ GUI, Add, Text, w0 xm+230 R1 Right, Dummy
 GUI, Add, Button, xp yp-30 w80 gSaveButton Section, Save
 GUI, Add, Button, x+m w80 gCancelButton, Cancel
 GUI, Add, Button, xs yp-30 w170 gAutoLoop, Auto Cycle
-GUI, Add, Button, xs yp-60 w170 gClearButton, Clear
+GUI, Add, Button, xs yp-30 w170 gClearButton, Clear All
 
 GUI, Show,, KeyList Helper
 GuiControl, Focus, LoseFocus
@@ -1982,44 +2012,9 @@ ClearButton:
 		GUIControl,,Edit%A_Index%,
 Return
 
-Clear1:	;there must be a better way for this
+ClearOne:
 	GUI, KeyHelper:Default
-	GUIControl,,Edit1,
-Return
-
-Clear2:
-	GUI, KeyHelper:Default
-	GUIControl,,Edit2,
-Return
-
-Clear3:
-	GUI, KeyHelper:Default
-	GUIControl,,Edit3,
-Return
-
-Clear4:
-	GUI, KeyHelper:Default
-	GUIControl,,Edit4,
-Return
-
-Clear5:
-	GUI, KeyHelper:Default
-	GUIControl,,Edit5,
-Return
-
-Clear6:
-	GUI, KeyHelper:Default
-	GUIControl,,Edit6,
-Return
-
-Clear7:
-	GUI, KeyHelper:Default
-	GUIControl,,Edit7,
-Return
-
-Clear8:
-	GUI, KeyHelper:Default
-	GUIControl,,Edit8,
+	GUIControl,,Edit%A_GuiControl%,
 Return
 
 CancelButton:
@@ -2335,7 +2330,6 @@ MouseEvent(MouseID, x := 0, y := 0){
 		useY := useY/abs(useY) * alt_ySen
 	Else IF (abs(y) AND abs(useY) < alt_ySen/6)
 		useY := useY/abs(useY) * alt_ySen/6
-
 	SetStick(useX/alt_xSen,-useY/alt_ySen)
 	Return
 }
