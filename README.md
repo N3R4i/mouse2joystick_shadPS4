@@ -1,4 +1,4 @@
-Version 1.01
+Version 1.02
 
 **SETUP GUIDE AT THE BOTTOM**
 
@@ -56,10 +56,12 @@ I only take credit for the improvements and new features I developed (see below)
 		* **Sprint** - Dedicated sprint key | While running -> it makes you sprint. Otherwise, it does nothing.
 		* **Jump** - Dedicated jump key | While sprinting it initiates a jump (after the minimum time needed to reach jumping speed). Otherwise, it does nothing.
 		* **Jump Attack** - Dedicated jump attack key | Does a jump attack. Can be used while standing still/running/sprinting.
+		* **Save&Quit** - For tight situations
  * **Extra Settings** - apart from the self explanatory hide cursor option, these are not tested with shadPS4 and probably won't work.
 
 ## Known issues
  * After using the script for a while, then toggling if off, mouse buttons stop working (mouse can still move). User can only click on the game window. Workaround: press **ctrl+alt+del** then **esc** to fix this state.
+ * Slight compatibility issue with the shadPS4 forks that have m/kb input: pressing an unbound key drops your mouse2joystick input.
 
 # Setup Guide
 0. For OS prior to Windows 10 you'll also need the [Xbox 360 Controller for Windows driver](https://web.archive.org/web/20160425082525/https://www.microsoft.com/hardware/en-us/d/xbox-360-controller-for-windows)
