@@ -19,7 +19,7 @@ I only take credit for the improvements and new features I developed (see below)
 # New features
  * **Deadzone compensation** - Allows the user to entirely eliminate the ingame deadzone. The value (between 0-1) represents the position where the stick tilt will start when the mouse is moved. Should be set the same as the ingame deadzone (which can be found by trial and error). Bloodborne has a fairly large deadzone, around 0.37. This means you have to tilt the stick to at least 37% of its full range, otherwise no camera movement is registered. So, if you set this to 0.37 then any mouse movement will cause the stick to start at 37% of its full range, thus eliminating the deadzone. If set to 1 then any mouse movement will cause full stick tilt.
  * **Mouse acceleration** - A very simple implentation, increases stick sensitivity the faster the mouse moves. Set to 0 to disable it.
- * **BloodBorne Bonus Buttons [B<sup>4</sup>]** - Fromsoft games like to do this thing where roll, backstep, sprint and jump are all the same button. This doesn't have to be this way, so I implemented hotkeys for these actions, so now you can bind each of these actions to separate keys. I also added a jump attack key. Later I may add a save-and-quit hotkey.
+ * **BloodBorne Bonus Buttons [B<sup>4</sup>]** - Fromsoft games like to do this thing where roll, backstep, sprint and jump are all the same button. This doesn't have to be this way, so I implemented hotkeys for these actions, so now you can bind each of these actions to separate keys. I also added a jump attack and a save&quit hotkey.
 
 # Settings Overview
  * **General**
@@ -65,9 +65,10 @@ I only take credit for the improvements and new features I developed (see below)
 
 # Setup Guide
 0. For OS prior to Windows 10 you'll also need the [Xbox 360 Controller for Windows driver](https://web.archive.org/web/20160425082525/https://www.microsoft.com/hardware/en-us/d/xbox-360-controller-for-windows)
-1. Download and extract the latest release of [mouse2joystick_shadPS4.zip](https://github.com/N3R4i/mouse2joystick_shadPS4/releases/latest)
+1. 64-bit OS is required! Download and extract the latest release of [mouse2joystick_shadPS4.zip](https://github.com/N3R4i/mouse2joystick_shadPS4/releases/latest)
 2. Run **mouse2joystick_shadPS4.exe** as admin. You'll get a prompt to install ScpVBus (virtual XBox controller driver). Click **yes**, the driver will install and the script will reload.
-	* If the driver installation was succesfull, you'll hear the device connected sound and Scp Virtual Bus Driver and Xbox 360 Pheripherials will show up in your Decive Manager. If you have issues try running the Install.bat as admin in the ScpVBus folder.
+	* If the driver installation was succesfull, you'll hear the device connected sound and Scp Virtual Bus Driver and Xbox 360 Peripherials will show up in your Decive Manager.
+ 	* If you have issues with the driver not installing do the following: in the ScpVBus\ folder right-click on **devcon.exe** -> **Properties** -> **Compatibility** -> enable: **"Run this program as an administrator"** -> **OK**. Now you can run the **Install.bat** to install ScpVBus
 3. Double click on the **mouse2joystick tray icon**
 	* **General-Hotkeys** to set a toggle key for mouse2joystick (default is **F1**)
 	* **General-Setup** if you want to tweak your mouse
