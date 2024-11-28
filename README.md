@@ -64,6 +64,7 @@ I only take credit for the improvements and new features I developed (see below)
  * Slight compatibility issue with the shadPS4 forks that have m/kb input: pressing an unbound key drops your mouse2joystick input.
 
 # Setup Guide
+* If you're using my [Jump on L3 mod](https://www.nexusmods.com/bloodborne/mods/156), then check out this version instead -> [mouse2joystick_shadPS4_JumpMod](https://github.com/N3R4i/mouse2joystick_shadPS4_JumpMod)
 0. For OS prior to Windows 10 you'll also need the [Xbox 360 Controller for Windows driver](https://web.archive.org/web/20160425082525/https://www.microsoft.com/hardware/en-us/d/xbox-360-controller-for-windows)
 1. 64-bit OS is required! Download and extract the latest release of [mouse2joystick_shadPS4.zip](https://github.com/N3R4i/mouse2joystick_shadPS4/releases/latest)
 2. Run **mouse2joystick_shadPS4.exe** as admin. You'll get a prompt to install ScpVBus (virtual XBox controller driver). Click **yes**, the driver will install and the script will reload.
