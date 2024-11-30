@@ -464,7 +464,7 @@ actionBB1:	;#1 Dodge+Backstep+Prevent jump
 	If Moving() AND Sprinting() {	;keep sprinting
 		vstick.SetBtn(1,2)
 	}
-	;Keywait % (KeyListByNumBB[1])
+	Keywait % (KeyListByNumBB[1])
 return
 
 actionBB2:	;#2 Dodge+Prevent jump
@@ -483,7 +483,7 @@ actionBB2:	;#2 Dodge+Prevent jump
 		If Sprinting() {	;keep sprinting
 			vstick.SetBtn(1,2)
 		}
-		;Keywait, % (KeyListByNumBB[2])
+		Keywait, % (KeyListByNumBB[2])
 		Return
 	}
 	setStickLeft("N/A",1, True)
@@ -493,7 +493,7 @@ actionBB2:	;#2 Dodge+Prevent jump
 	vstick.SetBtn(0,2)
 	sleep 30
 	setStickLeft("N/A",0, True)
-	;Keywait % (KeyListByNumBB[2])
+	Keywait % (KeyListByNumBB[2])
 return
 
 actionBB3:	;#3 Dodge+Backstep+Allow Jump
@@ -508,7 +508,7 @@ actionBB3:	;#3 Dodge+Backstep+Allow Jump
 	If Moving() AND Sprinting() {	;keep sprinting
 		vstick.SetBtn(1,2)
 	}
-	;Keywait % (KeyListByNumBB[3])
+	Keywait % (KeyListByNumBB[3])
 return
 
 actionBB4:	;#4 Dodge+Allow jump
@@ -524,7 +524,7 @@ actionBB4:	;#4 Dodge+Allow jump
 		If Sprinting() {	;keep sprinting
 			vstick.SetBtn(1,2)
 		}
-		;Keywait % (KeyListByNumBB[4])
+		Keywait % (KeyListByNumBB[4])
 		Return
 	}
 	setStickLeft("N/A",1, True)
@@ -534,7 +534,7 @@ actionBB4:	;#4 Dodge+Allow jump
 	vstick.SetBtn(0,2)
 	sleep 30
 	setStickLeft("N/A",0, True)
-	;Keywait % (KeyListByNumBB[4])
+	Keywait % (KeyListByNumBB[4])
 return
 
 actionBB5:	;#5 Backstep
@@ -550,13 +550,13 @@ actionBB5:	;#5 Backstep
 		If Sprinting() {	;keep sprinting
 			vstick.SetBtn(1,2)
 		}
-		;Keywait % (KeyListByNumBB[5])
+		Keywait % (KeyListByNumBB[5])
 		Return
 	}
 	vstick.SetBtn(1,2)
 	sleep 30
 	vstick.SetBtn(0,2)	;causes backstep on key press, rather than on key release
-	;Keywait % (KeyListByNumBB[5])
+	Keywait % (KeyListByNumBB[5])
 return
 
 actionBB6:	;#6 Sprint
@@ -592,26 +592,15 @@ actionBB7:	;#7 Jump (causes dodge if used too early, which is difficult to fix)
 			}
 			vsprintTimer=0
 			SetTimer, IsSprinting, On
-			;Keywait % (KeyListByNumBB[7])
+			Keywait % (KeyListByNumBB[7])
 			return
 		}
-		;If (vWasSprinting=0) {	;if not sprinting yet, then you will! This is way too inconsistent :-( may work with a better timer
-		;	vstick.SetBtn(1,2)
-		;	sleep 1000
-		;	vstick.SetBtn(0,2)
-		;	sleep 30
-		;	vstick.SetBtn(1,2)
-		;	sleep 30
-		;	vstick.SetBtn(0,2)
-		;	Keywait, % (KeyListByNumBB[7])
-		;	return
-		;}
 		If (vsprintTimerPost>-1) AND (vsprintTimerPost<=150) {	;Allow jumping max 150ms after sprinting
 			vstick.SetBtn(1,2)
 			sleep 30
 			vstick.SetBtn(0,2)
 		}
-		;Keywait % (KeyListByNumBB[7])
+		Keywait % (KeyListByNumBB[7])
 	}	
 return
 
@@ -632,7 +621,7 @@ actionBB8:	;#8 Jump attack
 		KeepStickHowItWas()
 	}
 	Halted=0
-	;Keywait % (KeyListByNumBB[8])
+	Keywait % (KeyListByNumBB[8])
 return
 
 actionBB9:
@@ -1088,19 +1077,19 @@ mouse2joystick(r,dr,OX,OY) {
 		X:=round(X*(r-dr)/RR)
 		Y:=round(Y*(r-dr)/RR)
 		RR:=sqrt(X**2+Y**2)
-		MouseMove,X+OX,Y+OY 					; Calculate point on controller circle, move back to screen/window coords, and move mouse.
+		DllCall("SetCursorPos", "int", X+OX, "int", Y+OY)	; Calculate point on controller circle, move back to screen/window coords, and move mouse. N3R4i: Changed from MouseMove to DllCall. This fixes real mouse button input being sent instead of the assigned hotkey, and also fixes the mouse not working after turning off the script
 	}
 	
 	; Calculate angle
 	phi:=getAngle(X,Y)
-	MouseMove,OX,OY	;adding one more MouseMove here makes the cursor jump back to the center more consistently, which reduces the occasional camera stutter
+	DllCall("SetCursorPos", "int", OX, "int", OY)	;adding one more MouseMove here makes the cursor jump back to the center more consistently, which reduces the occasional camera stutter
 	
 	IF (RR>k*r AND !AlreadyDown) 								; Check If outside inner circle/deadzone.
 		action(phi,((RR-k*r)/(r-k*r))**nnp)		; nnp is a non-linearity parameter.	
 	Else
 		setStick(0,0)							; Stick in equllibrium.
 
-	MouseMove,OX,OY
+	DllCall("SetCursorPos", "int", OX, "int", OY)
 }
 
 action(phi,tilt) {	
@@ -1367,7 +1356,7 @@ GUI, Main:New, -MinimizeBox, % "Mouse2Joystick for shadPS4 Settings  -  " . vers
 GUI, Add, Text,, Options:
 GUI, Add, TreeView, xm w180 r16 gTreeClick Section
 GUI, Add, Button,xs w78 gMainOk, Ok
-GUI, Add, Button,x+4 w78 gMainSave Default, Save
+GUI, Add, Button,x+4 w78 gMainSave Default, Apply
 GUI, Add, Tab2, +Buttons -Theme -Wrap vTabControl ys w320 h0 Section, General|General>Setup|General>Hotkeys|Mouse2Joystick|Mouse2Joystick>Axes|Mouse2Joystick>Keys|Keyboard Movement|Keyboard Movement>Keys|BloodBorne Bonus Buttons [B⁴]|Extra Settings
 GUIControlGet, S, Pos, TabControl ; Store the coords of this section for future use.
 ;------------------------------------------------------------------------------------------------------------------------------------------
