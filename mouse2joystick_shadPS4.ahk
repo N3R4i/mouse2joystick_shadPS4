@@ -1,6 +1,6 @@
 ;	;	;	;	;	;	;	;	;	;	;	;	;	;	;	;
 ;	Modified for shadPS4 by: N3R4i (https://github.com/N3R4i/)
-;	Last Modified Date: 2024-11-26
+;	Last Modified Date: 2024-12-04
 ; 
 ;	Original Author: Helgef
 ;	Date: 2016-08-17
@@ -28,7 +28,7 @@
 ;			evilC - CvJoyInterface.ahk
 ;			CemuUser8 - CvGenInterface.ahk (modified version of CvJoyInterface.ahk with vXBox device support)
 ;
-version := "v1.02"
+version := "v1.4"
 #NoEnv  																; Recommended for performance and compatibility with future AutoHotkey releases.
 SendMode Input															; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  											; Ensures a consistent starting directory.
@@ -55,7 +55,6 @@ IF (A_PtrSize < 8) {
 
 ;OrigMouseSpeed := ""
 ;DllCall("SystemParametersInfo", UInt, 0x70, UInt, 0, UIntP, OrigMouseSpeed, UInt, 0) ; Get Original Mouse Speed.
-
 toggle:=1													; On/off parameter for the hotkey.	Toggle 0 means controller is on. The placement of this variable is disturbing.
 
 ; If no settings file, create, When changing this, remember to make corresponding changes after the setSettingsToDefault label (error handling) ; Currently at bottom of script
@@ -103,6 +102,7 @@ hideCursor=1
 useAltMouseMethod=0
 alt_xSen=200
 alt_ySen=300
+jumpMod=0
 )
 	FileAppend,%defaultSettings%,settings.ini
 	IF (ErrorLevel) {
@@ -450,28 +450,10 @@ Sprinting() {	;check sprinting key state
 }
 
 actionBB1:	;#1 Dodge+Backstep+Prevent jump
-	If Moving() AND Sprinting()  {	;prevents jumping if dodge is used during sprinting
-		vstick.SetBtn(0,2)
-		sleep 300
-	}
-	If (vsprintTimerPost!=-1) {	;prevents jumping is sprint was used recently
-		sleep vsprintTimerPostMax-vsprintTimerPost
-	}
-	vstick.SetBtn(1,2)
-	sleep 30
-	vstick.SetBtn(0,2)	;causes dodge on key press, rather than on key release
-	sleep 30
-	If Moving() AND Sprinting() {	;keep sprinting
-		vstick.SetBtn(1,2)
-	}
-	Keywait % (KeyListByNumBB[1])
-return
-
-actionBB2:	;#2 Dodge+Prevent jump
-	IF Moving() {
-		If Sprinting() {	;prevents jumping if dodge is used during sprinting
+	If (!jumpMod) {	;only used for vanilla
+		If Moving() AND Sprinting()  {	;prevents jumping if dodge is used during sprinting
 			vstick.SetBtn(0,2)
-			sleep 300
+			sleep 350
 		}
 		If (vsprintTimerPost!=-1) {	;prevents jumping is sprint was used recently
 			sleep vsprintTimerPostMax-vsprintTimerPost
@@ -480,147 +462,196 @@ actionBB2:	;#2 Dodge+Prevent jump
 		sleep 30
 		vstick.SetBtn(0,2)	;causes dodge on key press, rather than on key release
 		sleep 30
-		If Sprinting() {	;keep sprinting
+		If Moving() AND Sprinting() {	;keep sprinting
 			vstick.SetBtn(1,2)
 		}
-		Keywait, % (KeyListByNumBB[2])
-		Return
+		Keywait % (KeyListByNumBB[1])
 	}
-	setStickLeft("N/A",1, True)
-	sleep 30
-	vstick.SetBtn(1,2)
-	sleep 30
-	vstick.SetBtn(0,2)
-	sleep 30
-	setStickLeft("N/A",0, True)
-	Keywait % (KeyListByNumBB[2])
 return
 
-actionBB3:	;#3 Dodge+Backstep+Allow Jump
-	If Sprinting() {	;Allow jump
+actionBB2:	;#2 Dodge+Prevent jump
+	If (!jumpMod) {	;only used for vanilla
+		IF Moving() {
+			If Sprinting() {	;prevents jumping if dodge is used during sprinting
+				vstick.SetBtn(0,2)
+				sleep 350
+			}
+			If (vsprintTimerPost!=-1) {	;prevents jumping is sprint was used recently
+				sleep vsprintTimerPostMax-vsprintTimerPost
+			}
+			vstick.SetBtn(1,2)
+			sleep 30
+			vstick.SetBtn(0,2)	;causes dodge on key press, rather than on key release
+			sleep 30
+			If Sprinting() {	;keep sprinting
+				vstick.SetBtn(1,2)
+			}
+			Keywait, % (KeyListByNumBB[2])
+			Return
+		}
+		setStickLeft("N/A",1, True)
+		sleep 30
+		vstick.SetBtn(1,2)
+		sleep 30
+		vstick.SetBtn(0,2)
+		sleep 30
+		setStickLeft("N/A",0, True)
+		Keywait % (KeyListByNumBB[2])
+	}
+return
+
+actionBB3:	;#3 Dodge+Backstep+Allow Jump		OK
+	If (vSprinting=1)	{	;if ○ is held release it
 		vstick.SetBtn(0,2)
 		sleep 30
 	}
 	vstick.SetBtn(1,2)
 	sleep 30
-	vstick.SetBtn(0,2)	;causes dodge on key press, rather than on key release
+	vstick.SetBtn(0,2)
 	sleep 30
-	If Moving() AND Sprinting() {	;keep sprinting
+	If (vSprinting=1)	{	;keep sprinting
 		vstick.SetBtn(1,2)
 	}
 	Keywait % (KeyListByNumBB[3])
 return
 
-actionBB4:	;#4 Dodge+Allow jump
+actionBB4:	;#4 Dodge+Allow jump		OK
+	If (vSprinting=1) {	;if ○ is held release it
+		vstick.SetBtn(0,2)
+		sleep 30
+	}
 	IF Moving() {
-		If Sprinting() {	;Allow jump
-			vstick.SetBtn(0,2)
-			sleep 30
-		}
 		vstick.SetBtn(1,2)
 		sleep 30
-		vstick.SetBtn(0,2)	;causes dodge on key press, rather than on key release
+		vstick.SetBtn(0,2)
 		sleep 30
-		If Sprinting() {	;keep sprinting
-			vstick.SetBtn(1,2)
-		}
-		Keywait % (KeyListByNumBB[4])
-		Return
+	} Else {	;if not moving, force roll forward
+		setStickLeft("N/A",1, True)
+		sleep 30
+		vstick.SetBtn(1,2)
+		sleep 30
+		vstick.SetBtn(0,2)
+		sleep 30
+		setStickLeft("N/A",0, True)
 	}
-	setStickLeft("N/A",1, True)
-	sleep 30
-	vstick.SetBtn(1,2)
-	sleep 30
-	vstick.SetBtn(0,2)
-	sleep 30
-	setStickLeft("N/A",0, True)
+	If (vSprinting=1) {	;keep sprinting
+		vstick.SetBtn(1,2)
+	}
 	Keywait % (KeyListByNumBB[4])
 return
 
 actionBB5:	;#5 Backstep
+	If (vSprinting=1) {	;if ○ is held release it
+		setStickLeft(0,0, True)	;stop moving
+		vstick.SetBtn(0,2)
+		sleep 30
+	}
 	IF Moving() {
 		setStickLeft(0,0, True)	;stop moving
-		vstick.SetBtn(0,2)	;release X buttong in case it was held
 			sleep 30
 		vstick.SetBtn(1,2)
 			sleep 30
-		vstick.SetBtn(0,2)	;causes backstep on key press, rather than on key release
+		vstick.SetBtn(0,2)
 			sleep 30
 		KeepStickHowItWas()	;keep moving after backstep
-		If Sprinting() {	;keep sprinting
-			vstick.SetBtn(1,2)
-		}
-		Keywait % (KeyListByNumBB[5])
-		Return
+	} Else {
+		vstick.SetBtn(1,2)
+		sleep 30
+		vstick.SetBtn(0,2)
+		sleep 30
 	}
-	vstick.SetBtn(1,2)
-	sleep 30
-	vstick.SetBtn(0,2)	;causes backstep on key press, rather than on key release
+	If (vSprinting=1) {	;keep sprinting
+		vstick.SetBtn(1,2)
+	}
 	Keywait % (KeyListByNumBB[5])
 return
 
 actionBB6:	;#6 Sprint
-	While GetKeyState(KeyListByNumBB[6], "P") {
-		IF Moving() {
-			vstick.SetBtn(1,2)	;start sprinting
-			SetTimer, IsSprinting, On	;start sprint timer
-			sleep 500	;don't release it too early to prevent rolling
-			Keywait % (KeyListByNumBB[6])
-			vstick.SetBtn(0,2)
-			vsprintTimer=0
-			vsprintTimerPost=0
-			SetTimer, WasSprinting, 25	;timer since sprinting stopped
-			Return
+	If (jumpMod) {	;if jumpmod is used we don't need extra timers
+		While GetKeyState(KeyListByNumBB[4], "P") {
+			IF Moving() {
+				vstick.SetBtn(1,2)	;start sprinting
+				vSprinting:=1	;to know O button state
+				sleep 500	;don't release it too early to prevent rolling
+				Keywait % (KeyListByNumBB[4])
+				vstick.SetBtn(0,2)
+				vSprinting:=0
+				Return
+			}
+			sleep 100	;prevents hotkey spam
 		}
-		sleep 100	;prevents hotkey spam
+		return
+	} Else {
+		While GetKeyState(KeyListByNumBB[6], "P") {
+			IF Moving() {
+				vstick.SetBtn(1,2)	;start sprinting
+				vSprinting:=1	;to know O button state
+				SetTimer, IsSprinting, On	;start sprint timer
+				sleep 500	;don't release it too early to prevent rolling
+				Keywait % (KeyListByNumBB[6])
+				vstick.SetBtn(0,2)
+				vSprinting:=0	;to know O button state
+				vsprintTimer=0
+				vsprintTimerPost=0
+				SetTimer, WasSprinting, 25	;timer since sprinting stopped
+				Return
+			}
+			sleep 100	;prevents hotkey spam
+		}
 	}
 return
 
 actionBB7:	;#7 Jump (causes dodge if used too early, which is difficult to fix)
-	SetTimer, IsSprinting, Off
-	IF Moving() {
-		If Sprinting() {
-			sleep vsprintTimerMax-vsprintTimer
-			vstick.SetBtn(0,2)
-			sleep 30
-			vstick.SetBtn(1,2)
-			sleep 30
-			vstick.SetBtn(0,2)
-			sleep 30
-			If Sprinting() {	;keep sprinting
+	If (jumpMod) {
+		vstick.SetBtn(1,9)
+		sleep 30
+		vstick.SetBtn(0,9)
+		Keywait % KeyListByNumBB[5]
+		return
+	} Else {
+		SetTimer, IsSprinting, Off
+		IF Moving() {
+			If Sprinting() {
+				sleep vsprintTimerMax-vsprintTimer
+				vstick.SetBtn(0,2)
+				sleep 30
 				vstick.SetBtn(1,2)
+				sleep 30
+				vstick.SetBtn(0,2)
+				sleep 30
+				If Sprinting() {	;keep sprinting
+					vstick.SetBtn(1,2)
+				}
+				vsprintTimer=0
+				SetTimer, IsSprinting, On
+				Keywait % (KeyListByNumBB[7])
+				return
 			}
-			vsprintTimer=0
-			SetTimer, IsSprinting, On
+			If (vsprintTimerPost>-1) AND (vsprintTimerPost<=150) {	;Allow jumping max 150ms after sprinting
+				vstick.SetBtn(1,2)
+				sleep 30
+				vstick.SetBtn(0,2)
+			}
 			Keywait % (KeyListByNumBB[7])
-			return
-		}
-		If (vsprintTimerPost>-1) AND (vsprintTimerPost<=150) {	;Allow jumping max 150ms after sprinting
-			vstick.SetBtn(1,2)
-			sleep 30
-			vstick.SetBtn(0,2)
-		}
-		Keywait % (KeyListByNumBB[7])
-	}	
+		}	
+	}
 return
 
 actionBB8:	;#8 Jump attack
 	IF Moving() {
-		setStickLeft(0,0, True)	;stop moving
+		setStickLeft(0,0, True)
 		sleep 30
-		Halted=1	
+		KeepStickHowItWas()
+	} Else {
+		setStickLeft("N/A",1, True)
 	}
-	setStickLeft("N/A",1, True)
 	sleep 30
 	vstick.SetAxisByIndex(100,3)
 	sleep 30
 	vstick.SetAxisByIndex(0,3)
 	sleep 30
 	setStickLeft("N/A",0, True)
-	If (Halted=1) {	;keep moving
-		KeepStickHowItWas()
-	}
-	Halted=0
+	KeepStickHowItWas()
 	Keywait % (KeyListByNumBB[8])
 return
 
@@ -728,8 +759,11 @@ pressJoyButton:
 		{
 		Case 2:
 			vstick.SetBtn(1,joyButtonNumber)
-			SetTimer, IsSprinting, On	;Sprint timer
-			SetTimer, WasSprinting, Off	;Post-sprint timer
+			vSprinting:=1	;to know O button state
+			If (!jumpMod) {
+				SetTimer, IsSprinting, On	;Sprint timer
+				SetTimer, WasSprinting, Off	;Post-sprint timer
+			}
 		Case 7:
 			IF (lockZL AND ZLToggle)
 				vstick.SetAxisByIndex(0,6)
@@ -830,9 +864,12 @@ releaseJoyButton:
 		{
 			Case 2:
 				vstick.SetBtn(0,joyButtonNumber)
+				vSprinting:=0	;to know O button state
 				vsprintTimerPost=0
-				SetTimer, IsSprinting, Off	;Sprint timer
-				SetTimer, WasSprinting, 25	;Post-sprint timer
+				If (!jumpMod) {
+					SetTimer, IsSprinting, Off	;Sprint timer
+					SetTimer, WasSprinting, 25	;Post-sprint timer
+				}
 			Case 7:
 				IF (lockZL AND ZLToggle)
 					vstick.SetAxisByIndex(100,6)
@@ -1475,6 +1512,7 @@ GUI, Tab, BloodBorne Bonus Buttons [B⁴]
 	GUI, Add, GroupBox, x%SX% y%SY% w340 h80 Section, Active KeyList
 	GUI, Add, Edit, xs+10 yp+20 w320 vopjoystickButtonKeyListBB, %joystickButtonKeyListBB%
 	GUI, Add, Button, xs+10 yp+30 w320 gKeyListHelperBB, Bonus Buttons
+	Gui, Add, CheckBox, % "xs+10 yp+40 vopjumpMod gMainSave Checked" . jumpMod, Jump on L3 mod installed?
 ;------------------------------------------------------------------------------------------------------------------------------------------
 GUI, Tab, Extra Settings
 	GUI, Add, GroupBox, x%SX% y%SY% w320 h40 Section,BotW Mouse Wheel to Weapon Change
@@ -1663,6 +1701,7 @@ SubmitAll:
 	IniWrite, % opuseAltMouseMethod, settings.ini, Extra Settings, useAltMouseMethod
 	IniWrite, % opalt_xSen, settings.ini, Extra Settings, alt_xSen
 	IniWrite, % opalt_ySen, settings.ini, Extra Settings, alt_ySen
+	IniWrite, % opjumpMod, settings.ini, Extra Settings, jumpMod
 Return
 
 selectionPath(ID) {
@@ -1849,7 +1888,11 @@ Loop, Parse, getKeyList, `,
 	KeyListByNumBB[A_Index] := keyName
 }
 IF (vXBox) {
-	textWidth := 140
+	If (jumpMod) {
+		textWidth := 85
+	} Else {
+		textWidth := 155
+	}
 	numEdits := 9
 }
 Else {
@@ -1862,39 +1905,44 @@ GUI, KeyHelper:New, +HWNDKeyHelperHWND -MinimizeBox +OwnerMain
 GUI, Margin, 10, 7.5
 GUI, Font,, Lucida Sans Typewriter ; Courier New
 GUI, Add, Text, W0 H0 vLoseFocus, Hidden
-GUI, Add, Text, W%textWidth% R1 Right Section, Dodge/Backstep (no jump)
+GUI, Add, Text, W%textWidth%+20 R1 Right Section, % jumpMod ? "-" : "Dodge/Backstep (prevent jump)"
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[1]
 GUI, Add, Button, xp+85 yp-1 w19 gClearOne v1, X
-GUI, Add, Text, W%textWidth% xs R1 Right, Dodge (no jump)
+GUI, Add, Text, W%textWidth% xs R1 Right, % jumpMod ? "-" : "Dodge (prevent jump)"
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[2]
 GUI, Add, Button, xp+85 yp-1 w19 gClearOne v2, X
-GUI, Add, Text, W%textWidth% xs R1 Right, Dodge/Backstep (with jump)
+GUI, Add, Text, W%textWidth% xs R1 Right, % jumpMod ? "Dodge/Backstep" : "Dodge/Backstep (allow jump)"
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[3]
 GUI, Add, Button, xp+85 yp-1 w19 gClearOne v3, X
-GUI, Add, Text, W%textWidth% xs R1 Right, Dodge (with jump)
+GUI, Add, Text, W%textWidth% xs R1 Right, % jumpMod ? "Dodge" : "Dodge (allow jump)"
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[4]
 GUI, Add, Button, xp+85 yp-1 w19 gClearOne v4, X
-GUI, Add, Text, W%textWidth% ys R1 Right Section, Backstep
+GUI, Add, Text, W+80 ys R1 Right Section, Backstep
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[5]
 GUI, Add, Button, xp+85 yp-1 w19 gClearOne v5, X
-GUI, Add, Text, W%textWidth% xs R1 Right, Sprint
+GUI, Add, Text, W+80 xs R1 Right, Sprint
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[6]
 GUI, Add, Button, xp+85 yp-1 w19 gClearOne v6, X
-GUI, Add, Text, W%textWidth% xs R1 Right, Jump
+GUI, Add, Text, W+80 xs R1 Right, Jump
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[7]
 GUI, Add, Button, xp+85 yp-1 w19 gClearOne v7, X
-GUI, Add, Text, W%textWidth% xs R1 Right, Jump Attack
+GUI, Add, Text, W+80 xs R1 Right, Jump Attack
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[8]
 GUI, Add, Button, xp+85 yp-1 w19 gClearOne v8, X
-GUI, Add, Text, W%textWidth% xs R1 Right, Save&&Quit
+GUI, Add, Text, W+80 xs R1 Right, Save&&Quit
 GUI, Add, Edit, W80 R1 x+m yp-3 Center ReadOnly -TabStop, % KeyListByNumBB[9]
 GUI, Add, Button, xp+85 yp-1 w19 gClearOne v9, X
 GUI, Add, Text, w0 xs R1 Right, Dummy
 
-GUI, Add, Button, xp-100 yp-20 w80 gSaveButtonBB Section, Save
+GUI, Add, Button, xp-150 yp-20 w170 gClearButton Section, Clear All
+GUI, Add, Button, xs w80 gSaveButtonBB, Save
 GUI, Add, Button, x+m w80 gCancelButton, Cancel
-GUI, Add, Button, xs w170 gClearButton, Clear All
 GUI, Add, Text, w0 yp+15 R1 Right, Dummy
+
+;GUI, Add, Button, xp-150 yp-20 w80 gSaveButtonBB Section, Save
+;GUI, Add, Button, x+m w80 gCancelButton, Cancel
+;GUI, Add, Button, xs w170 gClearButton, Clear All
+;GUI, Add, Text, w0 yp+15 R1 Right, Dummy
 
 GUI, Show,, KeyList Helper
 GuiControl, Focus, LoseFocus
